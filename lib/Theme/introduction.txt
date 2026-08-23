@@ -1,0 +1,2 @@
+this folder should only contain file code related to app theme.
+used theme blue and white for now later we will change based on what suits app more.

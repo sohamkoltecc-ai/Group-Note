@@ -1,0 +1,2 @@
+make all code modular by break down repetative task into reusable widget and try not make code hardcoded.
+add widget code only in this folder.
