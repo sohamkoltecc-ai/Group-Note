@@ -1,16 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
-enum DeadlinePriority { low, medium, high, critical }
+import '../Backend/deadline.dart';
+import 'deadline_repository.dart';
+import 'reminder_service.dart';
 
-enum ReminderOption {
-  none,
-  atDeadline,
-  fiveMinutesBefore,
-  fifteenMinutesBefore,
-  thirtyMinutesBefore,
-  oneHourBefore,
-  oneDayBefore,
-}
+export '../Backend/deadline.dart';
 
 extension DeadlinePriorityLabel on DeadlinePriority {
   String get label => switch (this) {
@@ -33,135 +27,53 @@ extension ReminderOptionLabel on ReminderOption {
   };
 }
 
-class Deadline {
-  const Deadline({
-    required this.id,
-    required this.title,
-    required this.description,
-    required this.dueDate,
-    required this.dueTime,
-    required this.priority,
-    required this.completed,
-    required this.reminder,
-    required this.createdAt,
-    required this.updatedAt,
-  });
-
-  final String id;
-  final String title;
-  final String description;
-  final DateTime dueDate;
-  final TimeOfDay dueTime;
-  final DeadlinePriority priority;
-  final bool completed;
-  final ReminderOption reminder;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-
-  DateTime get dueDateTime => DateTime(
-    dueDate.year,
-    dueDate.month,
-    dueDate.day,
-    dueTime.hour,
-    dueTime.minute,
-  );
-
-  bool get isOverdue => !completed && dueDateTime.isBefore(DateTime.now());
-
-  Deadline copyWith({
-    String? title,
-    String? description,
-    DateTime? dueDate,
-    TimeOfDay? dueTime,
-    DeadlinePriority? priority,
-    bool? completed,
-    ReminderOption? reminder,
-    DateTime? updatedAt,
-  }) => Deadline(
-    id: id,
-    title: title ?? this.title,
-    description: description ?? this.description,
-    dueDate: dueDate ?? this.dueDate,
-    dueTime: dueTime ?? this.dueTime,
-    priority: priority ?? this.priority,
-    completed: completed ?? this.completed,
-    reminder: reminder ?? this.reminder,
-    createdAt: createdAt,
-    updatedAt: updatedAt ?? this.updatedAt,
-  );
-}
-
 class DeadlineService extends ChangeNotifier {
-  DeadlineService._() {
-    final now = DateTime.now();
-    _deadlines.addAll([
-      Deadline(
-        id: 'sample-today',
-        title: 'Review project requirements',
-        description: 'Confirm the Group Note module integration details.',
-        dueDate: DateTime(now.year, now.month, now.day),
-        dueTime: const TimeOfDay(hour: 18, minute: 0),
-        priority: DeadlinePriority.high,
-        completed: false,
-        reminder: ReminderOption.oneHourBefore,
-        createdAt: now,
-        updatedAt: now,
-      ),
-      Deadline(
-        id: 'sample-upcoming',
-        title: 'Prepare calendar demo',
-        description: 'Show monthly navigation and deadline indicators.',
-        dueDate: DateTime(now.year, now.month, now.day + 2),
-        dueTime: const TimeOfDay(hour: 12, minute: 0),
-        priority: DeadlinePriority.medium,
-        completed: false,
-        reminder: ReminderOption.fifteenMinutesBefore,
-        createdAt: now,
-        updatedAt: now,
-      ),
-    ]);
-  }
+  DeadlineService(this._repository, {required this.reminderService});
 
-  static final DeadlineService instance = DeadlineService._();
-  final List<Deadline> _deadlines = [];
+  final DeadlineRepository _repository;
+  final ReminderService reminderService;
 
-  List<Deadline> get deadlines => _sorted(_deadlines);
+  List<Deadline> get deadlines => _sorted(_repository.getDeadlines());
 
   Deadline addDeadline({
     required String title,
     required String description,
     required DateTime dueDate,
-    required TimeOfDay dueTime,
+    required DeadlineTime dueTime,
     required DeadlinePriority priority,
     required ReminderOption reminder,
   }) {
     final now = DateTime.now();
-    final deadline = Deadline(
-      id: now.microsecondsSinceEpoch.toString(),
-      title: title.trim(),
-      description: description.trim(),
-      dueDate: _dateOnly(dueDate),
-      dueTime: dueTime,
-      priority: priority,
-      completed: false,
-      reminder: reminder,
-      createdAt: now,
-      updatedAt: now,
+    final deadline = _repository.addDeadline(
+      Deadline(
+        id: now.microsecondsSinceEpoch.toString(),
+        title: title.trim(),
+        description: description.trim(),
+        dueDate: _dateOnly(dueDate),
+        dueTime: dueTime,
+        priority: priority,
+        completed: false,
+        reminder: reminder,
+        createdAt: now,
+        updatedAt: now,
+      ),
     );
-    _deadlines.add(deadline);
+    reminderService.updateReminder(deadline);
     notifyListeners();
     return deadline;
   }
 
   void updateDeadline(Deadline deadline) {
-    final index = _deadlines.indexWhere((item) => item.id == deadline.id);
-    if (index == -1) return;
-    _deadlines[index] = deadline.copyWith(updatedAt: DateTime.now());
+    final updated = _repository.updateDeadline(
+      deadline.copyWith(updatedAt: DateTime.now()),
+    );
+    reminderService.updateReminder(updated);
     notifyListeners();
   }
 
   void deleteDeadline(String id) {
-    _deadlines.removeWhere((item) => item.id == id);
+    _repository.deleteDeadline(id);
+    reminderService.cancelReminder(id);
     notifyListeners();
   }
 
@@ -169,20 +81,16 @@ class DeadlineService extends ChangeNotifier {
   void markIncomplete(String id) => _setCompletion(id, false);
 
   void _setCompletion(String id, bool completed) {
-    final index = _deadlines.indexWhere((item) => item.id == id);
-    if (index == -1) return;
-    _deadlines[index] = _deadlines[index].copyWith(
-      completed: completed,
-      updatedAt: DateTime.now(),
-    );
-    notifyListeners();
+    final deadline = _repository.getDeadlineById(id);
+    if (deadline == null) return;
+    updateDeadline(deadline.copyWith(completed: completed));
   }
 
   List<Deadline> forDate(DateTime date) =>
-      _sorted(_deadlines.where((item) => _sameDate(item.dueDate, date)));
+      _sorted(deadlines.where((item) => _sameDate(item.dueDate, date)));
 
   List<Deadline> upcoming() => _sorted(
-    _deadlines.where(
+    deadlines.where(
       (item) => !item.completed && !item.dueDateTime.isBefore(DateTime.now()),
     ),
   );
@@ -190,16 +98,16 @@ class DeadlineService extends ChangeNotifier {
   List<Deadline> today() => forDate(DateTime.now());
 
   List<Deadline> overdue() =>
-      _sorted(_deadlines.where((item) => item.isOverdue));
+      _sorted(deadlines.where((item) => item.isOverdue));
 
   List<Deadline> completed() =>
-      _sorted(_deadlines.where((item) => item.completed));
+      _sorted(deadlines.where((item) => item.completed));
 
   List<Deadline> byPriority(DeadlinePriority priority) =>
-      _sorted(_deadlines.where((item) => item.priority == priority));
+      _sorted(deadlines.where((item) => item.priority == priority));
 
   bool hasDeadlineOn(DateTime date) =>
-      _deadlines.any((item) => _sameDate(item.dueDate, date));
+      deadlines.any((item) => _sameDate(item.dueDate, date));
 
   static List<Deadline> _sorted(Iterable<Deadline> items) {
     final result = List<Deadline>.from(items);

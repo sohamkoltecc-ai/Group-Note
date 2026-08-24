@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import '../Services/deadline_service.dart';
-import '../Services/reminder_service.dart';
 
 class DeadlineFormScreen extends StatefulWidget {
-  const DeadlineFormScreen({super.key, this.deadline, this.initialDate});
+  const DeadlineFormScreen({
+    super.key,
+    required this.deadlineService,
+    this.deadline,
+    this.initialDate,
+  });
 
+  final DeadlineService deadlineService;
   final Deadline? deadline;
   final DateTime? initialDate;
 
@@ -30,7 +35,12 @@ class _DeadlineFormScreenState extends State<DeadlineFormScreen> {
       text: existing?.description ?? '',
     );
     _date = existing?.dueDate ?? widget.initialDate ?? DateTime.now();
-    _time = existing?.dueTime ?? TimeOfDay.now();
+    _time = existing == null
+        ? TimeOfDay.now()
+        : TimeOfDay(
+            hour: existing.dueTime.hour,
+            minute: existing.dueTime.minute,
+          );
     _priority = existing?.priority ?? DeadlinePriority.medium;
     _reminder = existing?.reminder ?? ReminderOption.none;
   }
@@ -199,14 +209,14 @@ class _DeadlineFormScreenState extends State<DeadlineFormScreen> {
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
-    final service = DeadlineService.instance;
+    final service = widget.deadlineService;
     final existing = widget.deadline;
     final deadline = existing == null
         ? service.addDeadline(
             title: _titleController.text,
             description: _descriptionController.text,
             dueDate: _date,
-            dueTime: _time,
+            dueTime: DeadlineTime(hour: _time.hour, minute: _time.minute),
             priority: _priority,
             reminder: _reminder,
           )
@@ -214,12 +224,11 @@ class _DeadlineFormScreenState extends State<DeadlineFormScreen> {
             title: _titleController.text.trim(),
             description: _descriptionController.text.trim(),
             dueDate: _date,
-            dueTime: _time,
+            dueTime: DeadlineTime(hour: _time.hour, minute: _time.minute),
             priority: _priority,
             reminder: _reminder,
           );
     if (existing != null) service.updateDeadline(deadline);
-    await ReminderService.instance.updateReminder(deadline);
     if (mounted) Navigator.pop(context, deadline);
   }
 

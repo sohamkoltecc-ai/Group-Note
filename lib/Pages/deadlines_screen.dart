@@ -1,25 +1,27 @@
 import 'package:flutter/material.dart';
 import '../Services/deadline_service.dart';
-import '../Services/reminder_service.dart';
 import '../Widget/deadline_card.dart';
 import 'deadline_form_screen.dart';
 
 enum DeadlineFilter { all, upcoming, today, overdue, completed }
 
 class DeadlinesScreen extends StatefulWidget {
-  const DeadlinesScreen({super.key});
+  const DeadlinesScreen({super.key, required this.deadlineService});
+
+  final DeadlineService deadlineService;
   @override
   State<DeadlinesScreen> createState() => _DeadlinesScreenState();
 }
 
 class _DeadlinesScreenState extends State<DeadlinesScreen> {
-  final _service = DeadlineService.instance;
+  late final DeadlineService _service;
   DeadlineFilter _filter = DeadlineFilter.all;
   DeadlinePriority? _priority;
 
   @override
   void initState() {
     super.initState();
+    _service = widget.deadlineService;
     _service.addListener(_refresh);
   }
 
@@ -187,19 +189,18 @@ class _DeadlinesScreenState extends State<DeadlinesScreen> {
   };
   Future<void> _openForm({Deadline? deadline}) async => Navigator.push(
     context,
-    MaterialPageRoute(builder: (_) => DeadlineFormScreen(deadline: deadline)),
+    MaterialPageRoute(
+      builder: (_) =>
+          DeadlineFormScreen(deadlineService: _service, deadline: deadline),
+    ),
   );
-  Future<void> _toggle(Deadline deadline) async {
+  void _toggle(Deadline deadline) {
     deadline.completed
         ? _service.markIncomplete(deadline.id)
         : _service.markComplete(deadline.id);
-    await ReminderService.instance.updateReminder(
-      deadline.copyWith(completed: !deadline.completed),
-    );
   }
 
-  Future<void> _delete(Deadline deadline) async {
+  void _delete(Deadline deadline) {
     _service.deleteDeadline(deadline.id);
-    await ReminderService.instance.cancelReminder(deadline.id);
   }
 }

@@ -80,7 +80,10 @@ class DeadlineCard extends StatelessWidget {
                         ),
                         _chip(
                           Icons.access_time_rounded,
-                          deadline.dueTime.format(context),
+                          TimeOfDay(
+                            hour: deadline.dueTime.hour,
+                            minute: deadline.dueTime.minute,
+                          ).format(context),
                           const Color(0xFF64748B),
                         ),
                         _chip(

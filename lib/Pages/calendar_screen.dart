@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 import '../Services/deadline_service.dart';
-import '../Services/reminder_service.dart';
 import '../Widget/calendar_day_cell.dart';
 import '../Widget/deadline_card.dart';
 import 'deadline_form_screen.dart';
 
 class CalendarScreen extends StatefulWidget {
-  const CalendarScreen({super.key});
+  const CalendarScreen({super.key, required this.deadlineService});
+
+  final DeadlineService deadlineService;
   @override
   State<CalendarScreen> createState() => _CalendarScreenState();
 }
 
 class _CalendarScreenState extends State<CalendarScreen> {
-  final _service = DeadlineService.instance;
+  late final DeadlineService _service;
   late DateTime _visibleMonth;
   late DateTime _selectedDate;
   static const _months = [
@@ -34,6 +35,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   @override
   void initState() {
     super.initState();
+    _service = widget.deadlineService;
     _selectedDate = _dateOnly(DateTime.now());
     _visibleMonth = DateTime(_selectedDate.year, _selectedDate.month);
     _service.addListener(_refresh);
@@ -279,25 +281,27 @@ class _CalendarScreenState extends State<CalendarScreen> {
   Future<void> _addDeadline() async => Navigator.push(
     context,
     MaterialPageRoute(
-      builder: (_) => DeadlineFormScreen(initialDate: _selectedDate),
+      builder: (_) => DeadlineFormScreen(
+        deadlineService: _service,
+        initialDate: _selectedDate,
+      ),
     ),
   );
   Future<void> _editDeadline(Deadline deadline) async => Navigator.push(
     context,
-    MaterialPageRoute(builder: (_) => DeadlineFormScreen(deadline: deadline)),
+    MaterialPageRoute(
+      builder: (_) =>
+          DeadlineFormScreen(deadlineService: _service, deadline: deadline),
+    ),
   );
-  Future<void> _toggle(Deadline deadline) async {
+  void _toggle(Deadline deadline) {
     deadline.completed
         ? _service.markIncomplete(deadline.id)
         : _service.markComplete(deadline.id);
-    await ReminderService.instance.updateReminder(
-      deadline.copyWith(completed: !deadline.completed),
-    );
   }
 
-  Future<void> _delete(Deadline deadline) async {
+  void _delete(Deadline deadline) {
     _service.deleteDeadline(deadline.id);
-    await ReminderService.instance.cancelReminder(deadline.id);
   }
 
   static DateTime _dateOnly(DateTime value) =>

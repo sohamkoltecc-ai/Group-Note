@@ -2,13 +2,18 @@ import 'package:flutter/material.dart';
 import 'notifi_screen.dart'; // Make sure this matches your notification file name
 import 'calendar_screen.dart';
 import 'deadlines_screen.dart';
+import '../Services/deadline_service.dart';
+import '../Services/deadline_service_factory.dart';
 
 void main() {
-  runApp(const GroupNoteApp());
+  runApp(GroupNoteApp(deadlineService: createLocalDeadlineService()));
 }
 
 class GroupNoteApp extends StatelessWidget {
-  const GroupNoteApp({Key? key}) : super(key: key);
+  const GroupNoteApp({Key? key, required this.deadlineService})
+    : super(key: key);
+
+  final DeadlineService deadlineService;
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +30,7 @@ class GroupNoteApp extends StatelessWidget {
           surface: const Color(0xFFF8FAFC),
         ),
       ),
-      home: const NavigationHub(),
+      home: NavigationHub(deadlineService: deadlineService),
     );
   }
 }
@@ -65,7 +70,10 @@ class TaskItem {
 }
 
 class NavigationHub extends StatefulWidget {
-  const NavigationHub({Key? key}) : super(key: key);
+  const NavigationHub({Key? key, required this.deadlineService})
+    : super(key: key);
+
+  final DeadlineService deadlineService;
 
   @override
   State<NavigationHub> createState() => _NavigationHubState();
@@ -753,7 +761,9 @@ class _NavigationHubState extends State<NavigationHub> {
                           onPressed: () => Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const CalendarScreen(),
+                              builder: (_) => CalendarScreen(
+                                deadlineService: widget.deadlineService,
+                              ),
                             ),
                           ),
                           child: const Text('Calendar'),
@@ -762,7 +772,9 @@ class _NavigationHubState extends State<NavigationHub> {
                           onPressed: () => Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const DeadlinesScreen(),
+                              builder: (_) => DeadlinesScreen(
+                                deadlineService: widget.deadlineService,
+                              ),
                             ),
                           ),
                           icon: const Icon(

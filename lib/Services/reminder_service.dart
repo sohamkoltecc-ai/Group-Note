@@ -1,28 +1,41 @@
-import 'deadline_service.dart';
+import '../Backend/deadline.dart';
 
-/// Stores the reminder integration boundary. Device notifications are not
-/// delivered in this phase because no notification package is configured.
-class ReminderService {
-  ReminderService._();
+abstract class ReminderScheduler {
+  void schedule(Deadline deadline);
+  void cancel(String deadlineId);
+}
 
-  static final ReminderService instance = ReminderService._();
+/// Temporary no-op delivery implementation. Replace it with a device or FCM
+/// scheduler later without changing deadline UI or business logic.
+class LocalReminderScheduler implements ReminderScheduler {
   final Set<String> _configuredReminderIds = <String>{};
 
-  Future<void> scheduleReminder(Deadline deadline) async {
+  @override
+  void schedule(Deadline deadline) {
     if (!deadline.completed && deadline.reminder != ReminderOption.none) {
       _configuredReminderIds.add(deadline.id);
     }
   }
 
-  Future<void> cancelReminder(String deadlineId) async {
+  @override
+  void cancel(String deadlineId) {
     _configuredReminderIds.remove(deadlineId);
-  }
-
-  Future<void> updateReminder(Deadline deadline) async {
-    await cancelReminder(deadline.id);
-    await scheduleReminder(deadline);
   }
 
   bool isConfigured(String deadlineId) =>
       _configuredReminderIds.contains(deadlineId);
+}
+
+class ReminderService {
+  ReminderService(this._scheduler);
+
+  final ReminderScheduler _scheduler;
+
+  void scheduleReminder(Deadline deadline) => _scheduler.schedule(deadline);
+  void cancelReminder(String deadlineId) => _scheduler.cancel(deadlineId);
+
+  void updateReminder(Deadline deadline) {
+    cancelReminder(deadline.id);
+    scheduleReminder(deadline);
+  }
 }
