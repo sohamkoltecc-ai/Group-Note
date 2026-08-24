@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:groupnote/Pages/Home_Page.dart';
+import 'package:groupnote/Pages/home_Page.dart';
 
 void main() {
   runApp(const MyApp());
