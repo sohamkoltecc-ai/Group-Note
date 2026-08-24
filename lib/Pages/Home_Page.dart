@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
 import 'notifi_screen.dart'; // Make sure this matches your notification file name
+import 'calendar_screen.dart';
+import 'deadlines_screen.dart';
+import '../Services/deadline_service.dart';
+import '../Services/deadline_service_factory.dart';
 
 void main() {
-  runApp(const GroupNoteApp());
+  runApp(GroupNoteApp(deadlineService: createLocalDeadlineService()));
 }
 
 class GroupNoteApp extends StatelessWidget {
-  const GroupNoteApp({Key? key}) : super(key: key);
+  const GroupNoteApp({Key? key, required this.deadlineService})
+    : super(key: key);
+
+  final DeadlineService deadlineService;
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +30,7 @@ class GroupNoteApp extends StatelessWidget {
           surface: const Color(0xFFF8FAFC),
         ),
       ),
-      home: const NavigationHub(),
+      home: NavigationHub(deadlineService: deadlineService),
     );
   }
 }
@@ -63,7 +70,10 @@ class TaskItem {
 }
 
 class NavigationHub extends StatefulWidget {
-  const NavigationHub({Key? key}) : super(key: key);
+  const NavigationHub({Key? key, required this.deadlineService})
+    : super(key: key);
+
+  final DeadlineService deadlineService;
 
   @override
   State<NavigationHub> createState() => _NavigationHubState();
@@ -720,9 +730,64 @@ class _NavigationHubState extends State<NavigationHub> {
             ),
             child: ListView.builder(
               padding: const EdgeInsets.all(20),
-              itemCount: _taskList.length,
+              itemCount: _taskList.length + 1,
               itemBuilder: (context, index) {
-                final task = _taskList[index];
+                if (index == 0) {
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEFF6FF),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFFBFDBFE)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.calendar_month_rounded,
+                          color: Color(0xFF2563EB),
+                        ),
+                        const SizedBox(width: 10),
+                        const Expanded(
+                          child: Text(
+                            'Calendar, deadlines & reminders',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1E3A8A),
+                            ),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => CalendarScreen(
+                                deadlineService: widget.deadlineService,
+                              ),
+                            ),
+                          ),
+                          child: const Text('Calendar'),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => DeadlinesScreen(
+                                deadlineService: widget.deadlineService,
+                              ),
+                            ),
+                          ),
+                          icon: const Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            size: 16,
+                            color: Color(0xFF2563EB),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+                final task = _taskList[index - 1];
                 return Container(
                   margin: const EdgeInsets.only(bottom: 12),
                   decoration: BoxDecoration(

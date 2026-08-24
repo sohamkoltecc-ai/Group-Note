@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:groupnote/Pages/Home_Page.dart';
+import 'package:groupnote/Services/deadline_service.dart';
+import 'package:groupnote/Services/deadline_service_factory.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp(deadlineService: createLocalDeadlineService()));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({super.key, required this.deadlineService});
+
+  final DeadlineService deadlineService;
 
   // This widget is the root of your application.
   @override
@@ -17,7 +21,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const NavigationHub(),
+      home: NavigationHub(deadlineService: deadlineService),
     );
   }
 }
