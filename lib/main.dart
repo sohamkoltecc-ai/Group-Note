@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:groupnote/Pages/home_Page.dart';
-import 'package:groupnote/Pages/Home_Page.dart';
+import 'package:groupnote/Pages/Navigation_hub.dart';
 import 'package:groupnote/Services/deadline_service.dart';
 import 'package:groupnote/Services/deadline_service_factory.dart';
 
@@ -13,14 +12,20 @@ class MyApp extends StatelessWidget {
 
   final DeadlineService deadlineService;
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Group Note',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        scaffoldBackgroundColor: const Color(0xFF1E40AF),
+        primaryColor: const Color(0xFF2563EB),
+        fontFamily: 'Roboto',
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF2563EB),
+          primary: const Color(0xFF2563EB),
+          surface: const Color(0xFFF8FAFC),
+        ),
       ),
       home: NavigationHub(deadlineService: deadlineService),
     );

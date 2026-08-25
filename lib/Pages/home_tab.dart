@@ -184,7 +184,7 @@ class _HomeTabState extends State<HomeTab> {
                           ),
                           const SizedBox(height: 12),
                           SizedBox(
-                            height: 72,
+                            height: 82,
                             child: ListView(
                               scrollDirection: Axis.horizontal,
                               children: [

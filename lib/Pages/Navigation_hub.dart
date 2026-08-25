@@ -1,49 +1,14 @@
 import 'package:flutter/material.dart';
-import 'home_tab.dart';
-import 'groups_page.dart';
-import 'notes_page.dart';
-import 'tasks_page.dart';
-import 'profile_page.dart';
-import 'notifi_screen.dart'; // Make sure this matches your notification file name
-import 'calendar_screen.dart';
-import 'deadlines_screen.dart';
-import '../Services/deadline_service.dart';
-import '../Services/deadline_service_factory.dart';
+import 'package:groupnote/Pages/groups_page.dart';
+import 'package:groupnote/Pages/home_tab.dart';
+import 'package:groupnote/Pages/notes_page.dart';
+import 'package:groupnote/Pages/profile_page.dart';
+import 'package:groupnote/Pages/tasks_page.dart';
+import 'package:groupnote/Services/deadline_service.dart';
 
-void main() {
-  runApp(GroupNoteApp(deadlineService: createLocalDeadlineService()));
-}
-
-class GroupNoteApp extends StatelessWidget {
-  const GroupNoteApp({Key? key, required this.deadlineService})
-    : super(key: key);
-
-  final DeadlineService deadlineService;
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Group Note',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        scaffoldBackgroundColor: const Color(0xFF1E40AF),
-        primaryColor: const Color(0xFF2563EB),
-        fontFamily: 'Roboto',
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF2563EB),
-          primary: const Color(0xFF2563EB),
-          surface: const Color(0xFFF8FAFC),
-        ),
-      ),
-      home: NavigationHub(deadlineService: deadlineService),
-    );
-  }
-}
-
-// --- NAVIGATION HUB ---
 class NavigationHub extends StatefulWidget {
   const NavigationHub({Key? key, required this.deadlineService})
-    : super(key: key);
+      : super(key: key);
 
   final DeadlineService deadlineService;
 
