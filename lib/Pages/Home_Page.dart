@@ -4,13 +4,21 @@ import 'groups_page.dart';
 import 'notes_page.dart';
 import 'tasks_page.dart';
 import 'profile_page.dart';
+import 'notifi_screen.dart'; // Make sure this matches your notification file name
+import 'calendar_screen.dart';
+import 'deadlines_screen.dart';
+import '../Services/deadline_service.dart';
+import '../Services/deadline_service_factory.dart';
 
 void main() {
-  runApp(const GroupNoteApp());
+  runApp(GroupNoteApp(deadlineService: createLocalDeadlineService()));
 }
 
 class GroupNoteApp extends StatelessWidget {
-  const GroupNoteApp({Key? key}) : super(key: key);
+  const GroupNoteApp({Key? key, required this.deadlineService})
+    : super(key: key);
+
+  final DeadlineService deadlineService;
 
   @override
   Widget build(BuildContext context) {
@@ -27,14 +35,17 @@ class GroupNoteApp extends StatelessWidget {
           surface: const Color(0xFFF8FAFC),
         ),
       ),
-      home: const NavigationHub(),
+      home: NavigationHub(deadlineService: deadlineService),
     );
   }
 }
 
 // --- NAVIGATION HUB ---
 class NavigationHub extends StatefulWidget {
-  const NavigationHub({Key? key}) : super(key: key);
+  const NavigationHub({Key? key, required this.deadlineService})
+    : super(key: key);
+
+  final DeadlineService deadlineService;
 
   @override
   State<NavigationHub> createState() => _NavigationHubState();
