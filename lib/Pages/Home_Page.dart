@@ -10,8 +10,7 @@ void main() {
 }
 
 class GroupNoteApp extends StatelessWidget {
-  const GroupNoteApp({Key? key, required this.deadlineService})
-    : super(key: key);
+  const GroupNoteApp({super.key, required this.deadlineService});
 
   final DeadlineService deadlineService;
 
@@ -70,8 +69,7 @@ class TaskItem {
 }
 
 class NavigationHub extends StatefulWidget {
-  const NavigationHub({Key? key, required this.deadlineService})
-    : super(key: key);
+  const NavigationHub({super.key, required this.deadlineService});
 
   final DeadlineService deadlineService;
 
@@ -176,7 +174,7 @@ class _NavigationHubState extends State<NavigationHub> {
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: Colors.black.withValues(alpha: 0.06),
               blurRadius: 20,
               offset: const Offset(0, -4),
             ),
@@ -287,7 +285,7 @@ class _NavigationHubState extends State<NavigationHub> {
                         Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.15),
+                            color: Colors.white.withValues(alpha: 0.15),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
@@ -329,7 +327,7 @@ class _NavigationHubState extends State<NavigationHub> {
                   borderRadius: BorderRadius.circular(18),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.12),
+                      color: Colors.black.withValues(alpha: 0.12),
                       blurRadius: 16,
                       offset: const Offset(0, 6),
                     ),
@@ -493,7 +491,7 @@ class _NavigationHubState extends State<NavigationHub> {
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.02),
+                                  color: Colors.black.withValues(alpha: 0.02),
                                   blurRadius: 10,
                                   offset: const Offset(0, 4),
                                 ),
@@ -506,7 +504,7 @@ class _NavigationHubState extends State<NavigationHub> {
                                   decoration: BoxDecoration(
                                     color: const Color(
                                       0xFF2563EB,
-                                    ).withOpacity(0.1),
+                                    ).withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(14),
                                   ),
                                   child: const Icon(
@@ -951,7 +949,7 @@ class _NavigationHubState extends State<NavigationHub> {
       child: Row(
         children: [
           CircleAvatar(
-            backgroundColor: color.withOpacity(0.12),
+            backgroundColor: color.withValues(alpha: 0.12),
             radius: 18,
             child: Icon(icon, color: color, size: 18),
           ),
@@ -1039,7 +1037,7 @@ class _NavigationHubState extends State<NavigationHub> {
       ),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: const Color(0xFF2563EB).withOpacity(0.1),
+          backgroundColor: const Color(0xFF2563EB).withValues(alpha: 0.1),
           child: Text(
             title[0],
             style: const TextStyle(
@@ -1121,7 +1119,7 @@ class _NavigationHubState extends State<NavigationHub> {
             ),
             child: ListTile(
               leading: CircleAvatar(
-                backgroundColor: item.accentColor.withOpacity(0.12),
+                backgroundColor: item.accentColor.withValues(alpha: 0.12),
                 child: Icon(item.icon, color: item.accentColor),
               ),
               title: Text(
@@ -1225,7 +1223,7 @@ class _NavigationHubState extends State<NavigationHub> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           CircleAvatar(
-            backgroundColor: color.withOpacity(0.12),
+            backgroundColor: color.withValues(alpha: 0.12),
             child: Icon(icon, color: color),
           ),
           Column(
