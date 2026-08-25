@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import 'Ai screen.dart';
-import 'Drawing Notes Modulle.dart';
-import 'OCR Page Module.dart';
+import 'Pages/Ai screen.dart';
+import 'Pages/Drawing Notes Modulle.dart';
+import 'Pages/OCR Page Module.dart';
 
 void main() {
   runApp(const NoteApp());

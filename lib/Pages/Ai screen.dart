@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'Flutter service.dart';
+import '../Services/Flutter service.dart';
 
 class AIStudyAssistant extends StatefulWidget {
   const AIStudyAssistant({super.key});
@@ -27,18 +27,27 @@ class _AIStudyAssistantState extends State<AIStudyAssistant> {
 
       final result = await ai.askAI(controller.text.trim());
 
+      if (!mounted) return;
       setState(() {
         answer = result;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         answer = "Something went wrong.";
       });
     }
 
+    if (!mounted) return;
     setState(() {
       loading = false;
     });
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
   }
 
   @override
