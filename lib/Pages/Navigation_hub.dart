@@ -7,8 +7,7 @@ import 'package:groupnote/Pages/tasks_page.dart';
 import 'package:groupnote/Services/deadline_service.dart';
 
 class NavigationHub extends StatefulWidget {
-  const NavigationHub({Key? key, required this.deadlineService})
-      : super(key: key);
+  const NavigationHub({super.key, required this.deadlineService});
 
   final DeadlineService deadlineService;
 
@@ -43,7 +42,7 @@ class _NavigationHubState extends State<NavigationHub> {
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: Colors.black.withValues(alpha: 0.06),
               blurRadius: 20,
               offset: const Offset(0, -4),
             ),

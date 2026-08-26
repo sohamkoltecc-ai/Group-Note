@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class NotesPage extends StatelessWidget {
-  const NotesPage({Key? key}) : super(key: key);
+  const NotesPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -102,7 +102,7 @@ class NotesPage extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           CircleAvatar(
-            backgroundColor: color.withOpacity(0.12),
+            backgroundColor: color.withValues(alpha: 0.12),
             child: Icon(icon, color: color),
           ),
           Column(

@@ -5,7 +5,7 @@ void main() {
 }
 
 class GroupNoteNotificationsApp extends StatelessWidget {
-  const GroupNoteNotificationsApp({Key? key}) : super(key: key);
+  const GroupNoteNotificationsApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +53,7 @@ class NotificationModel {
 // 2. NOTIFICATIONS SCREEN
 // -----------------------------------------------------------------------------
 class NotificationsScreen extends StatefulWidget {
-  const NotificationsScreen({Key? key}) : super(key: key);
+  const NotificationsScreen({super.key});
 
   @override
   State<NotificationsScreen> createState() => _NotificationsScreenState();
@@ -134,13 +134,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Widget build(BuildContext context) {
     // Filter logic
     final filteredNotifications = _notifications.where((n) {
-      if (_selectedFilter == 'Announcements')
+      if (_selectedFilter == 'Announcements') {
         return n.type == NotificationType.announcement;
-      if (_selectedFilter == 'Messages')
+      }
+      if (_selectedFilter == 'Messages') {
         return n.type == NotificationType.message;
+      }
       if (_selectedFilter == 'Tasks') return n.type == NotificationType.task;
-      if (_selectedFilter == 'Invites')
+      if (_selectedFilter == 'Invites') {
         return n.type == NotificationType.invite;
+      }
       return true; // 'All'
     }).toList();
 
@@ -281,7 +284,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         margin: const EdgeInsets.only(right: 8),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.white : Colors.white.withOpacity(0.15),
+          color: isSelected
+              ? Colors.white
+              : Colors.white.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
@@ -316,7 +321,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.02),
+              color: Colors.black.withValues(alpha: 0.02),
               blurRadius: 8,
               offset: const Offset(0, 3),
             ),
@@ -538,7 +543,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
