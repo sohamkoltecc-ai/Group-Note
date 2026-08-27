@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'package:groupnote/Pages/groups_page.dart';
 import 'package:groupnote/Pages/home_tab.dart';
 import 'package:groupnote/Pages/notes_page.dart';
@@ -7,8 +8,10 @@ import 'package:groupnote/Pages/tasks_page.dart';
 import 'package:groupnote/Services/deadline_service.dart';
 
 class NavigationHub extends StatefulWidget {
-  const NavigationHub({Key? key, required this.deadlineService})
-      : super(key: key);
+  const NavigationHub({
+    Key? key,
+    required this.deadlineService,
+  }) : super(key: key);
 
   final DeadlineService deadlineService;
 
@@ -27,60 +30,106 @@ class _NavigationHubState extends State<NavigationHub> {
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> pages = [
-      HomeTab(onNavigateToTasks: () => _changeTab(3)), // Tab 0
-      const GroupsPage(), // Tab 1
-      const NotesPage(), // Tab 2
-      const TasksPage(), // Tab 3
-      const ProfilePage(), // Tab 4
-    ];
-
     return Scaffold(
-      backgroundColor: const Color(0xFF1E3A8A),
-      body: SafeArea(bottom: false, child: pages[_currentIndex]),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.06),
-              blurRadius: 20,
-              offset: const Offset(0, -4),
+      backgroundColor: const Color(0xFFF8FAFC),
+
+      // ================= BODY =================
+      body: SafeArea(
+        bottom: false,
+        child: IndexedStack(
+          index: _currentIndex,
+          children: [
+            HomeTab(
+              onNavigateToTasks: () {
+                _changeTab(3);
+              },
             ),
+
+            const GroupsPage(),
+
+            const NotesPage(),
+
+            const TasksPage(),
+
+            const ProfilePage(),
           ],
         ),
-        child: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: _changeTab,
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: Colors.white,
-          selectedItemColor: const Color(0xFF1D4ED8),
-          unselectedItemColor: const Color(0xFF94A3B8),
-          selectedFontSize: 12,
-          unselectedFontSize: 12,
-          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.grid_view_rounded),
-              label: 'Home',
+      ),
+
+      // ================= BOTTOM NAVIGATION =================
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 15,
+                offset: const Offset(0, -3),
+              ),
+            ],
+          ),
+          child: BottomNavigationBar(
+            currentIndex: _currentIndex,
+
+            onTap: (index) {
+              _changeTab(index);
+            },
+
+            type: BottomNavigationBarType.fixed,
+
+            backgroundColor: Colors.white,
+
+            selectedItemColor: const Color(0xFF1D4ED8),
+
+            unselectedItemColor: const Color(0xFF94A3B8),
+
+            selectedFontSize: 12,
+
+            unselectedFontSize: 12,
+
+            selectedLabelStyle: const TextStyle(
+              fontWeight: FontWeight.bold,
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.chat_bubble_rounded),
-              label: 'Groups',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.article_rounded),
-              label: 'Notes',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.task_alt_rounded),
-              label: 'Tasks',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person_rounded),
-              label: 'Profile',
-            ),
-          ],
+
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(
+                  Icons.grid_view_rounded,
+                ),
+                label: 'Home',
+              ),
+
+              BottomNavigationBarItem(
+                icon: Icon(
+                  Icons.chat_bubble_rounded,
+                ),
+                label: 'Groups',
+              ),
+
+              BottomNavigationBarItem(
+                icon: Icon(
+                  Icons.article_rounded,
+                ),
+                label: 'Notes',
+              ),
+
+              BottomNavigationBarItem(
+                icon: Icon(
+                  Icons.task_alt_rounded,
+                ),
+                label: 'Tasks',
+              ),
+
+              BottomNavigationBarItem(
+                icon: Icon(
+                  Icons.person_rounded,
+                ),
+                label: 'Profile',
+              ),
+            ],
+          ),
         ),
       ),
     );
