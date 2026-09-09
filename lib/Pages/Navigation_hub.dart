@@ -65,6 +65,14 @@ class _NavigationHubState extends State<NavigationHub> {
               blurRadius: 20,
               offset: const Offset(0, -4),
             ),
+
+            const GroupsPage(),
+
+            const NotesPage(),
+
+            const TasksPage(),
+
+            const ProfilePage(),
           ],
         ),
 
@@ -123,7 +131,44 @@ class _NavigationHubState extends State<NavigationHub> {
               activeIcon: Icon(Icons.person_rounded),
               label: 'Profile',
             ),
-          ],
+
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(
+                  Icons.grid_view_rounded,
+                ),
+                label: 'Home',
+              ),
+
+              BottomNavigationBarItem(
+                icon: Icon(
+                  Icons.chat_bubble_rounded,
+                ),
+                label: 'Groups',
+              ),
+
+              BottomNavigationBarItem(
+                icon: Icon(
+                  Icons.article_rounded,
+                ),
+                label: 'Notes',
+              ),
+
+              BottomNavigationBarItem(
+                icon: Icon(
+                  Icons.task_alt_rounded,
+                ),
+                label: 'Tasks',
+              ),
+
+              BottomNavigationBarItem(
+                icon: Icon(
+                  Icons.person_rounded,
+                ),
+                label: 'Profile',
+              ),
+            ],
+          ),
         ),
       ),
     );
