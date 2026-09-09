@@ -4,8 +4,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
-class NotesPage extends StatefulWidget {
-  const NotesPage({Key? key}) : super(key: key);
+class NotesPage extends StatelessWidget {
+  const NotesPage({super.key});
 
   @override
   State<NotesPage> createState() => _NotesPageState();
@@ -927,20 +927,9 @@ class _NotesPageState extends State<NotesPage> {
       ),
       child: Row(
         children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: const Color(0xFFE11D48)
-                  .withOpacity(0.10),
-              borderRadius:
-                  BorderRadius.circular(13),
-            ),
-            child: const Icon(
-              Icons.picture_as_pdf_rounded,
-              color: Color(0xFFE11D48),
-              size: 27,
-            ),
+          CircleAvatar(
+            backgroundColor: color.withValues(alpha: 0.12),
+            child: Icon(icon, color: color),
           ),
 
           const SizedBox(width: 12),

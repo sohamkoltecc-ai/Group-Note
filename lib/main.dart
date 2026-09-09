@@ -1,33 +1,72 @@
 import 'package:flutter/material.dart';
-import 'package:groupnote/Pages/Navigation_hub.dart';
-import 'package:groupnote/Services/deadline_service.dart';
-import 'package:groupnote/Services/deadline_service_factory.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-void main() {
-  runApp(MyApp(deadlineService: createLocalDeadlineService()));
+import 'Pages/Navigation_hub.dart';
+import 'Pages/login_page.dart';
+import 'Pages/register_page.dart';
+import 'Services/deadline_service_factory.dart';
+import 'firebase_options.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  runApp(const NoteApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key, required this.deadlineService});
-
-  final DeadlineService deadlineService;
+class NoteApp extends StatelessWidget {
+  const NoteApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Group Note',
       debugShowCheckedModeBanner: false,
+      title: 'GroupNote',
+
       theme: ThemeData(
-        scaffoldBackgroundColor: const Color(0xFF1E40AF),
-        primaryColor: const Color(0xFF2563EB),
-        fontFamily: 'Roboto',
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF2563EB),
-          primary: const Color(0xFF2563EB),
-          surface: const Color(0xFFF8FAFC),
-        ),
+        primarySwatch: Colors.indigo,
+        scaffoldBackgroundColor: Colors.white,
+        useMaterial3: true,
       ),
-      home: NavigationHub(deadlineService: deadlineService),
+
+      routes: {
+        '/login': (context) => const LoginPage(),
+
+        '/register': (context) => const RegisterPage(),
+
+        '/home': (context) {
+          return NavigationHub(deadlineService: createLocalDeadlineService());
+        },
+      },
+
+      home: const AuthGate(),
+    );
+  }
+}
+
+class AuthGate extends StatelessWidget {
+  const AuthGate({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        if (snapshot.hasData && snapshot.data != null) {
+          return NavigationHub(deadlineService: createLocalDeadlineService());
+        }
+
+        return const LoginPage();
+      },
     );
   }
 }

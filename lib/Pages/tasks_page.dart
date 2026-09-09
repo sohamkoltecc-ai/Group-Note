@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'globals.dart';
 
 class TasksPage extends StatefulWidget {
-  const TasksPage({Key? key}) : super(key: key);
+  const TasksPage({super.key});
 
   @override
   State<TasksPage> createState() => _TasksPageState();

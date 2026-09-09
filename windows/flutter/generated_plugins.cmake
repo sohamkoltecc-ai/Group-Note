@@ -3,7 +3,10 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
-  syncfusion_pdfviewer_windows
+  cloud_firestore
+  file_selector_windows
+  firebase_auth
+  firebase_core
   url_launcher_windows
 )
 

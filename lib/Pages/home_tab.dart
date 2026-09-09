@@ -1,588 +1,400 @@
 import 'package:flutter/material.dart';
-import 'globals.dart';
-import 'notifi_screen.dart';
 
-class HomeTab extends StatefulWidget {
+import 'OCR Page Module.dart';
+import 'Ai screen.dart';
+import 'Drawing Notes Modulle.dart';
+
+class HomeTab extends StatelessWidget {
+  const HomeTab({
+    super.key,
+    required this.onNavigateToTasks,
+    required this.onNavigateToChat,
+    required this.onNavigateToGroups,
+    required this.onNavigateToNotes,
+    required this.onNavigateToProfile,
+  });
+
   final VoidCallback onNavigateToTasks;
-
-  const HomeTab({Key? key, required this.onNavigateToTasks}) : super(key: key);
-
-  @override
-  State<HomeTab> createState() => _HomeTabState();
-}
-
-class _HomeTabState extends State<HomeTab> {
-  String _searchQuery = '';
-  final TextEditingController _searchController = TextEditingController();
+  final VoidCallback onNavigateToChat;
+  final VoidCallback onNavigateToGroups;
+  final VoidCallback onNavigateToNotes;
+  final VoidCallback onNavigateToProfile;
 
   @override
   Widget build(BuildContext context) {
-    final filteredResults = globalSearchDatabase
-        .where(
-          (item) =>
-              item.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-              item.category.toLowerCase().contains(_searchQuery.toLowerCase()),
-        )
-        .toList();
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
 
-    return Column(
-      children: [
-        Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF1E3A8A), Color(0xFF2563EB)],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-          ),
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: CustomScrollView(
+        slivers: [
+          // =====================================================
+          // HEADER
+          // =====================================================
+          SliverToBoxAdapter(
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 25),
+
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF1E3A8A), Color(0xFF2563EB)],
+
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(30),
+                  bottomRight: Radius.circular(30),
+                ),
+              ),
+
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text(
-                        'Good Morning, Soham 👋',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
+                  Row(
+                    children: [
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+
+                          children: [
+                            Text(
+                              'Note App',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 25,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+
+                            SizedBox(height: 5),
+
+                            Text(
+                              'Everything you need to study',
+                              style: TextStyle(
+                                color: Color(0xFFBFDBFE),
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      SizedBox(height: 4),
-                      Text(
-                        'Computer Engineering • Semester 3',
-                        style: TextStyle(
-                          color: Color(0xFF93C5FD),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
+
+                      Container(
+                        width: 45,
+                        height: 45,
+
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.15),
+                          shape: BoxShape.circle,
+                        ),
+
+                        child: const Icon(
+                          Icons.notifications_none_rounded,
+                          color: Colors.white,
                         ),
                       ),
                     ],
                   ),
-                  GestureDetector(
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const NotificationsScreen(),
-                      ),
+
+                  const SizedBox(height: 22),
+
+                  Container(
+                    padding: const EdgeInsets.all(16),
+
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.12),
+
+                      borderRadius: BorderRadius.circular(18),
                     ),
-                    child: Stack(
+
+                    child: const Row(
                       children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.15),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.notifications_none_rounded,
-                            color: Colors.white,
-                            size: 22,
-                          ),
+                        Icon(
+                          Icons.waving_hand_rounded,
+                          color: Colors.amber,
+                          size: 30,
                         ),
-                        Positioned(
-                          right: 4,
-                          top: 4,
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: const BoxDecoration(
-                              color: Color(0xFFEF4444),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Text(
-                              '3',
+
+                        SizedBox(width: 12),
+
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+
+                          children: [
+                            Text(
+                              'Welcome 👋',
                               style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 9,
+                                fontSize: 18,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                          ),
+
+                            SizedBox(height: 3),
+
+                            Text(
+                              'Ready to learn something new?',
+                              style: TextStyle(
+                                color: Color(0xFFDBEAFE),
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(18),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.12),
-                      blurRadius: 16,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-                child: TextField(
-                  controller: _searchController,
-                  onChanged: (val) => setState(() => _searchQuery = val),
-                  style: const TextStyle(color: Color(0xFF0F172A)),
-                  decoration: InputDecoration(
-                    hintText: "Search 'Stacks', groups, notes...",
-                    hintStyle: const TextStyle(
-                      color: Color(0xFF94A3B8),
-                      fontSize: 14,
-                    ),
-                    prefixIcon: const Icon(
-                      Icons.search_rounded,
-                      color: Color(0xFF2563EB),
-                    ),
-                    suffixIcon: _searchQuery.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(
-                              Icons.cancel_rounded,
-                              color: Color(0xFF94A3B8),
-                            ),
-                            onPressed: () {
-                              _searchController.clear();
-                              setState(() => _searchQuery = '');
-                            },
-                          )
-                        : null,
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 15),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        Expanded(
-          child: Container(
-            width: double.infinity,
-            decoration: const BoxDecoration(
-              color: Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
-            ),
-            child: ClipRRect(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(30),
-              ),
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
-                child: _searchQuery.isNotEmpty
-                    ? _buildSearchResultsList(filteredResults)
-                    : Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Quick Actions',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF0F172A),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          SizedBox(
-                            height: 82,
-                            child: ListView(
-                              scrollDirection: Axis.horizontal,
-                              children: [
-                                _buildActionPill(
-                                  'New Note',
-                                  'Create document',
-                                  Icons.add_circle_outline_rounded,
-                                  const Color(0xFF2563EB),
-                                ),
-                                _buildActionPill(
-                                  'Join Channel',
-                                  'Enter code',
-                                  Icons.group_add_rounded,
-                                  const Color(0xFF0284C7),
-                                ),
-                                _buildActionPill(
-                                  'Upload PDF',
-                                  'Annotate slides',
-                                  Icons.picture_as_pdf_rounded,
-                                  const Color(0xFFE11D48),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _buildMetricCard(
-                                  '12',
-                                  'Active Groups',
-                                  Icons.forum_rounded,
-                                  const Color(0xFF2563EB),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _buildMetricCard(
-                                  '28',
-                                  'Saved Notes',
-                                  Icons.description_rounded,
-                                  const Color(0xFF4F46E5),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _buildMetricCard(
-                                  '${globalTaskList.where((t) => !t.isCompleted).length}',
-                                  'Pending Tasks',
-                                  Icons.pending_actions_rounded,
-                                  const Color(0xFF0D9488),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 24),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: const [
-                              Text(
-                                'Upcoming Deadline',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF0F172A),
-                                ),
-                              ),
-                              Text(
-                                'View All',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF2563EB),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: const Color(0xFFE2E8F0),
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.02),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: const Color(
-                                      0xFF2563EB,
-                                    ).withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                  child: const Icon(
-                                    Icons.assignment_rounded,
-                                    color: Color(0xFF2563EB),
-                                    size: 26,
-                                  ),
-                                ),
-                                const SizedBox(width: 14),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: const [
-                                      Text(
-                                        'Data Structures',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 15,
-                                          color: Color(0xFF0F172A),
-                                        ),
-                                      ),
-                                      SizedBox(height: 2),
-                                      Text(
-                                        'Assignment 3 • Stacks & Queues',
-                                        style: TextStyle(
-                                          color: Color(0xFF64748B),
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                      SizedBox(height: 4),
-                                      Text(
-                                        'Due Tomorrow at 6:00 PM',
-                                        style: TextStyle(
-                                          color: Color(0xFFEF4444),
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.arrow_forward_ios_rounded,
-                                    size: 16,
-                                    color: Color(0xFF94A3B8),
-                                  ),
-                                  onPressed: widget.onNavigateToTasks,
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          const Text(
-                            'Recent Group Chats',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF0F172A),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          _buildGroupChatTile(
-                            'Data Structures Channel',
-                            'Rahul: PDF for Unit 3 attached',
-                            '10:42 AM',
-                            true,
-                          ),
-                          _buildGroupChatTile(
-                            'DBMS Internal Exam',
-                            'Admin: Lab 204 location confirmed',
-                            'Yesterday',
-                            false,
-                          ),
-                        ],
-                      ),
-              ),
             ),
           ),
-        ),
-      ],
-    );
-  }
 
-  Widget _buildActionPill(
-    String title,
-    String subtitle,
-    IconData icon,
-    Color color,
-  ) {
-    return Container(
-      width: 145,
-      margin: const EdgeInsets.only(right: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            backgroundColor: color.withOpacity(0.12),
-            radius: 18,
-            child: Icon(icon, color: color, size: 18),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
-                    color: Color(0xFF0F172A),
-                  ),
-                ),
-                Text(
-                  subtitle,
-                  style: const TextStyle(
-                    color: Color(0xFF64748B),
-                    fontSize: 10,
-                  ),
-                  maxLines: 1,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+          // =====================================================
+          // TITLE
+          // =====================================================
+          const SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(20, 25, 20, 15),
 
-  Widget _buildMetricCard(
-    String count,
-    String label,
-    IconData icon,
-    Color color,
-  ) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: color, size: 22),
-          const SizedBox(height: 10),
-          Text(
-            count,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF0F172A),
-            ),
-          ),
-          Text(
-            label,
-            style: const TextStyle(
-              color: Color(0xFF64748B),
-              fontSize: 10,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildGroupChatTile(
-    String title,
-    String message,
-    String time,
-    bool unread,
-  ) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: const Color(0xFF2563EB).withOpacity(0.1),
-          child: Text(
-            title[0],
-            style: const TextStyle(
-              color: Color(0xFF2563EB),
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 14,
-            color: Color(0xFF0F172A),
-          ),
-        ),
-        subtitle: Text(
-          message,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
-        ),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              time,
-              style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 10),
-            ),
-            if (unread) ...[
-              const SizedBox(height: 4),
-              Container(
-                width: 8,
-                height: 8,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF2563EB),
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSearchResultsList(List<SearchItem> results) {
-    if (results.isEmpty)
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.all(40.0),
-          child: Text(
-            "No matches found.",
-            style: TextStyle(color: Color(0xFF94A3B8)),
-          ),
-        ),
-      );
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Search Results (${results.length})',
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-            color: Color(0xFF0F172A),
-          ),
-        ),
-        const SizedBox(height: 12),
-        ...results.map(
-          (item) => Container(
-            margin: const EdgeInsets.only(bottom: 10),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
-            ),
-            child: ListTile(
-              leading: CircleAvatar(
-                backgroundColor: item.accentColor.withOpacity(0.12),
-                child: Icon(item.icon, color: item.accentColor),
-              ),
-              title: Text(
-                item.title,
-                style: const TextStyle(
+              child: Text(
+                'Study Tools',
+                style: TextStyle(
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  fontSize: 14,
                   color: Color(0xFF0F172A),
                 ),
               ),
-              subtitle: Text(
-                '${item.category} • ${item.subtitle}',
-                style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
-              ),
-              trailing: const Icon(
-                Icons.arrow_forward_ios_rounded,
-                size: 14,
-                color: Color(0xFF94A3B8),
+            ),
+          ),
+
+          // =====================================================
+          // FEATURES
+          // =====================================================
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+
+            sliver: SliverGrid(
+              delegate: SliverChildListDelegate([
+                // OCR
+                HomeFeatureCard(
+                  icon: Icons.document_scanner_rounded,
+                  title: 'OCR',
+                  subtitle: 'Scan notes',
+                  iconColor: const Color(0xFF2563EB),
+
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const OCRPage()),
+                    );
+                  },
+                ),
+
+                // AI
+                HomeFeatureCard(
+                  icon: Icons.smart_toy_rounded,
+                  title: 'AI Assistant',
+                  subtitle: 'Ask AI',
+
+                  iconColor: const Color(0xFF7C3AED),
+
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const AIStudyAssistant(),
+                      ),
+                    );
+                  },
+                ),
+
+                // DRAWING
+                HomeFeatureCard(
+                  icon: Icons.brush_rounded,
+                  title: 'Drawing',
+                  subtitle: 'Draw a note',
+
+                  iconColor: const Color(0xFFDB2777),
+
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const DrawingNotePage(),
+                      ),
+                    );
+                  },
+                ),
+
+                // CHAT
+                HomeFeatureCard(
+                  icon: Icons.chat_rounded,
+                  title: 'Chat',
+                  subtitle: 'Send messages',
+
+                  iconColor: const Color(0xFF059669),
+
+                  onTap: onNavigateToChat,
+                ),
+
+                // GROUPS
+                HomeFeatureCard(
+                  icon: Icons.groups_rounded,
+                  title: 'Groups',
+                  subtitle: 'Study together',
+
+                  iconColor: const Color(0xFFEA580C),
+
+                  onTap: onNavigateToGroups,
+                ),
+
+                // NOTES
+                HomeFeatureCard(
+                  icon: Icons.note_alt_rounded,
+                  title: 'Notes',
+                  subtitle: 'Your notes',
+
+                  iconColor: const Color(0xFF0891B2),
+
+                  onTap: onNavigateToNotes,
+                ),
+
+                // TASKS
+                HomeFeatureCard(
+                  icon: Icons.task_alt_rounded,
+                  title: 'Tasks',
+                  subtitle: 'Manage tasks',
+
+                  iconColor: const Color(0xFF4F46E5),
+
+                  onTap: onNavigateToTasks,
+                ),
+
+                // PROFILE
+                HomeFeatureCard(
+                  icon: Icons.person_rounded,
+                  title: 'Profile',
+                  subtitle: 'Your account',
+
+                  iconColor: const Color(0xFF475569),
+
+                  onTap: onNavigateToProfile,
+                ),
+              ]),
+
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+
+                crossAxisSpacing: 14,
+
+                mainAxisSpacing: 14,
+
+                childAspectRatio: 1.08,
               ),
             ),
           ),
+
+          // Bottom spacing
+          const SliverToBoxAdapter(child: SizedBox(height: 25)),
+        ],
+      ),
+    );
+  }
+}
+
+// =============================================================
+// HOME FEATURE CARD
+// =============================================================
+
+class HomeFeatureCard extends StatelessWidget {
+  const HomeFeatureCard({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.iconColor,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final Color iconColor;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+
+        onTap: onTap,
+
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+
+            borderRadius: BorderRadius.circular(20),
+
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+
+          padding: const EdgeInsets.all(15),
+
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+
+            children: [
+              Container(
+                width: 58,
+                height: 58,
+
+                decoration: BoxDecoration(
+                  color: iconColor.withOpacity(0.10),
+
+                  borderRadius: BorderRadius.circular(17),
+                ),
+
+                child: Icon(icon, size: 30, color: iconColor),
+              ),
+
+              const SizedBox(height: 12),
+
+              Text(
+                title,
+                textAlign: TextAlign.center,
+
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF0F172A),
+                ),
+              ),
+
+              const SizedBox(height: 4),
+
+              Text(
+                subtitle,
+                textAlign: TextAlign.center,
+
+                style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+              ),
+            ],
+          ),
         ),
-      ],
+      ),
     );
   }
 }
