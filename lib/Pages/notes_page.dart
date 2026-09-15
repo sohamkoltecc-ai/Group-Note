@@ -4,7 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
-class NotesPage extends StatelessWidget {
+class NotesPage extends StatefulWidget {
   const NotesPage({super.key});
 
   @override
@@ -12,89 +12,65 @@ class NotesPage extends StatelessWidget {
 }
 
 class _NotesPageState extends State<NotesPage> {
-  // ---------------------------------------------------------
-  // NOTEBOOKS
-  // ---------------------------------------------------------
-
   final List<Map<String, dynamic>> notebooks = [
     {
       'title': 'Data Structures',
+      'description': '12 pages annotated PDF',
       'pages': 12,
-      'type': 'Notebook',
-      'icon': Icons.menu_book_rounded,
-      'color': const Color(0xFF2563EB),
-      'description': 'Important Data Structures notes',
+      'type': 'PDF',
       'content': '',
     },
     {
       'title': 'DBMS Unit 2',
+      'description': '8 pages handwritten notes',
       'pages': 8,
-      'type': 'Notebook',
-      'icon': Icons.storage_rounded,
-      'color': const Color(0xFF7C3AED),
-      'description': 'Database Systems notes',
+      'type': 'Notes',
       'content': '',
     },
     {
       'title': 'IoT Architecture',
-      'pages': 5,
-      'type': 'Notebook',
-      'icon': Icons.sensors_rounded,
-      'color': const Color(0xFF059669),
-      'description': 'IoT Architecture notes',
+      'description': 'Important concepts and diagrams',
+      'pages': 6,
+      'type': 'Notes',
+      'content': '',
+    },
+    {
+      'title': 'OOP in C++',
+      'description': '15 pages PDF notes',
+      'pages': 15,
+      'type': 'PDF',
       'content': '',
     },
   ];
 
-  // ---------------------------------------------------------
-  // PDF NOTES
-  // ---------------------------------------------------------
-
   final List<Map<String, dynamic>> pdfNotes = [];
-
-  // ---------------------------------------------------------
-  // ADD PDF
-  // ---------------------------------------------------------
 
   Future<void> _addPdf() async {
     try {
-      final result = await FilePicker.pickFiles(
+      final PlatformFile? file = await FilePicker.pickFile(
         type: FileType.custom,
         allowedExtensions: ['pdf'],
-        withData: true,
       );
 
-      if (result == null) {
+      if (file == null) {
         return;
       }
 
-      final file = result.files.single;
-
-      if (file.bytes == null) {
-        if (!mounted) return;
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Unable to read this PDF file'),
-          ),
-        );
-        return;
-      }
-
-      final Uint8List pdfBytes = file.bytes!;
-
-      setState(() {
-        pdfNotes.insert(0, {
-          'title': file.name,
-          'bytes': pdfBytes,
-        });
-      });
+      final Uint8List bytes = await file.readAsBytes();
 
       if (!mounted) return;
 
+      setState(() {
+        pdfNotes.add({
+          'title': file.name,
+          'bytes': bytes,
+        });
+      });
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${file.name} added successfully'),
+        const SnackBar(
+          content: Text('PDF added successfully'),
+          behavior: SnackBarBehavior.floating,
         ),
       );
     } catch (e) {
@@ -103,23 +79,17 @@ class _NotesPageState extends State<NotesPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Could not add PDF: $e'),
+          behavior: SnackBarBehavior.floating,
         ),
       );
     }
   }
 
-  // ---------------------------------------------------------
-  // VIEW PDF
-  // ---------------------------------------------------------
-
-  void _viewPdf(Map<String, dynamic> pdf) {
-    final Uint8List bytes = pdf['bytes'] as Uint8List;
-    final String title = pdf['title'] as String;
-
+  void _viewPdf(String title, Uint8List bytes) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => PdfViewerPage(
+        builder: (_) => PdfViewerPage(
           title: title,
           bytes: bytes,
         ),
@@ -127,67 +97,46 @@ class _NotesPageState extends State<NotesPage> {
     );
   }
 
-  // ---------------------------------------------------------
-  // DELETE PDF
-  // ---------------------------------------------------------
-
-  void _deletePdf(int index) {
+  Future<void> _deletePdf(int index) async {
     final String title = pdfNotes[index]['title'] as String;
 
-    showDialog(
+    final bool? delete = await showDialog<bool>(
       context: context,
-      builder: (dialogContext) {
+      builder: (context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
-          ),
-          title: const Text(
-            'Delete PDF?',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          title: const Text('Delete PDF'),
           content: Text(
             'Are you sure you want to delete "$title"?',
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.pop(dialogContext);
-              },
+              onPressed: () => Navigator.pop(context, false),
               child: const Text('Cancel'),
             ),
             ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  pdfNotes.removeAt(index);
-                });
-
-                Navigator.pop(dialogContext);
-
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('PDF deleted successfully'),
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
-              ),
+              onPressed: () => Navigator.pop(context, true),
               child: const Text('Delete'),
             ),
           ],
         );
       },
     );
+
+    if (delete == true && mounted) {
+      setState(() {
+        pdfNotes.removeAt(index);
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('PDF deleted successfully'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
-  // ---------------------------------------------------------
-  // CREATE NEW NOTEBOOK
-  // ---------------------------------------------------------
-
-  void _showNewNotebookDialog() {
+  void _showCreateNotebookDialog() {
     final TextEditingController nameController =
         TextEditingController();
 
@@ -196,16 +145,15 @@ class _NotesPageState extends State<NotesPage> {
 
     showDialog(
       context: context,
-      builder: (dialogContext) {
+      builder: (context) {
         return AlertDialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(22),
+            borderRadius: BorderRadius.circular(20),
           ),
           title: const Text(
             'Create New Notebook',
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              fontSize: 21,
             ),
           ),
           content: Column(
@@ -213,27 +161,23 @@ class _NotesPageState extends State<NotesPage> {
             children: [
               TextField(
                 controller: nameController,
-                autofocus: true,
                 decoration: InputDecoration(
                   labelText: 'Notebook Name',
-                  hintText: 'e.g. Data Structures',
-                  prefixIcon:
-                      const Icon(Icons.menu_book_rounded),
+                  hintText: 'e.g. Operating Systems',
+                  prefixIcon: const Icon(Icons.menu_book_rounded),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 16),
               TextField(
                 controller: descriptionController,
-                maxLines: 2,
+                maxLines: 3,
                 decoration: InputDecoration(
                   labelText: 'Description',
-                  hintText:
-                      'Write a few words about this notebook',
-                  prefixIcon:
-                      const Icon(Icons.description_outlined),
+                  hintText: 'Add a short description',
+                  prefixIcon: const Icon(Icons.description_outlined),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -241,70 +185,56 @@ class _NotesPageState extends State<NotesPage> {
               ),
             ],
           ),
-          actionsPadding:
-              const EdgeInsets.fromLTRB(16, 0, 16, 14),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(dialogContext);
+                Navigator.pop(context);
               },
               child: const Text('Cancel'),
             ),
             ElevatedButton(
               onPressed: () {
-                final name = nameController.text.trim();
-                final description =
+                final String name =
+                    nameController.text.trim();
+
+                final String description =
                     descriptionController.text.trim();
 
                 if (name.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content:
-                          Text('Please enter a notebook name'),
+                      content: Text(
+                        'Please enter a notebook name',
+                      ),
                     ),
                   );
                   return;
                 }
 
-                final newNotebook = {
-                  'title': name,
-                  'pages': 0,
-                  'type': 'Notebook',
-                  'icon': Icons.menu_book_rounded,
-                  'color': const Color(0xFF2563EB),
-                  'description': description.isEmpty
-                      ? 'My personal notes'
-                      : description,
-                  'content': '',
-                };
-
                 setState(() {
-                  notebooks.add(newNotebook);
+                  notebooks.add({
+                    'title': name,
+                    'description': description.isEmpty
+                        ? 'New notebook'
+                        : description,
+                    'pages': 0,
+                    'type': 'Notes',
+                    'content': '',
+                  });
                 });
 
-                Navigator.pop(dialogContext);
+                Navigator.pop(context);
 
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('$name notebook created'),
+                  const SnackBar(
+                    content: Text(
+                      'Notebook created successfully',
+                    ),
+                    behavior: SnackBarBehavior.floating,
                   ),
                 );
-
-                _openNotebook(newNotebook);
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1E3A8A),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text(
-                'Create Notebook',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              child: const Text('Create'),
             ),
           ],
         );
@@ -312,19 +242,18 @@ class _NotesPageState extends State<NotesPage> {
     );
   }
 
-  // ---------------------------------------------------------
-  // OPEN NOTEBOOK
-  // ---------------------------------------------------------
+  void _openNotebook(int index) {
+    final Map<String, dynamic> notebook =
+        notebooks[index];
 
-  void _openNotebook(Map<String, dynamic> notebook) {
-    final TextEditingController contentController =
+    final TextEditingController controller =
         TextEditingController(
-      text: notebook['content'] as String,
+      text: notebook['content'] as String? ?? '',
     );
 
     showDialog(
       context: context,
-      builder: (dialogContext) {
+      builder: (context) {
         return Dialog(
           insetPadding: const EdgeInsets.all(18),
           shape: RoundedRectangleBorder(
@@ -332,215 +261,133 @@ class _NotesPageState extends State<NotesPage> {
           ),
           child: StatefulBuilder(
             builder: (context, setDialogState) {
-              return SizedBox(
-                height:
-                    MediaQuery.of(context).size.height * 0.75,
+              return Padding(
+                padding: const EdgeInsets.all(20),
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(18),
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Color(0xFF1E3A8A),
-                            Color(0xFF2563EB),
-                          ],
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEDE7F6),
+                            borderRadius:
+                                BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.edit_note_rounded,
+                            color: Color(0xFF5125D8),
+                          ),
                         ),
-                        borderRadius: BorderRadius.vertical(
-                          top: Radius.circular(24),
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 44,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              color:
-                                  Colors.white.withOpacity(0.15),
-                              borderRadius:
-                                  BorderRadius.circular(12),
-                            ),
-                            child: const Icon(
-                              Icons.menu_book_rounded,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment:
-                                  CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  notebook['title'] as String,
-                                  maxLines: 1,
-                                  overflow:
-                                      TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 19,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 3),
-                                Text(
-                                  notebook['description']
-                                      as String,
-                                  maxLines: 1,
-                                  overflow:
-                                      TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    color: Color(0xFFBFDBFE),
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          IconButton(
-                            onPressed: () {
-                              Navigator.pop(dialogContext);
-                            },
-                            icon: const Icon(
-                              Icons.close_rounded,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    Padding(
-                      padding:
-                          const EdgeInsets.fromLTRB(18, 18, 18, 10),
-                      child: Row(
-                        children: [
-                          const Text(
-                            'Page 1',
-                            style: TextStyle(
-                              fontSize: 17,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            notebook['title'] as String,
+                            style: const TextStyle(
+                              fontSize: 20,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const Spacer(),
-                          Text(
-                            '${contentController.text.length} characters',
-                            style: const TextStyle(
-                              fontSize: 11,
-                              color: Color(0xFF94A3B8),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 18,
                         ),
-                        child: TextField(
-                          controller: contentController,
-                          maxLines: null,
-                          expands: true,
-                          textAlignVertical:
-                              TextAlignVertical.top,
-                          onChanged: (value) {
-                            setDialogState(() {});
+                        IconButton(
+                          onPressed: () {
+                            Navigator.pop(context);
                           },
-                          decoration: InputDecoration(
-                            hintText:
-                                'Start writing your notes here...\n\nYou can write definitions, important points, examples, formulas, or anything you want to remember.',
-                            hintStyle: const TextStyle(
-                              color: Color(0xFF94A3B8),
-                              height: 1.5,
-                            ),
-                            filled: true,
-                            fillColor:
-                                const Color(0xFFF8FAFC),
-                            contentPadding:
-                                const EdgeInsets.all(16),
-                            border: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.circular(16),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFE2E8F0),
-                              ),
-                            ),
-                          ),
+                          icon: const Icon(Icons.close),
                         ),
-                      ),
+                      ],
                     ),
-
-                    Padding(
-                      padding: const EdgeInsets.all(18),
+                    const SizedBox(height: 20),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF5F3FA),
+                        borderRadius:
+                            BorderRadius.circular(14),
+                      ),
                       child: Row(
                         children: [
-                          Expanded(
-                            child: OutlinedButton(
-                              onPressed: () {
-                                Navigator.pop(dialogContext);
-                              },
-                              style: OutlinedButton.styleFrom(
-                                minimumSize:
-                                    const Size(0, 50),
-                                shape:
-                                    RoundedRectangleBorder(
-                                  borderRadius:
-                                      BorderRadius.circular(14),
-                                ),
-                              ),
-                              child: const Text('Close'),
-                            ),
+                          const Icon(
+                            Icons.description_outlined,
+                            size: 20,
+                            color: Color(0xFF5125D8),
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: () {
-                                setState(() {
-                                  notebook['content'] =
-                                      contentController.text;
-
-                                  notebook['pages'] =
-                                      contentController.text
-                                              .trim()
-                                              .isEmpty
-                                          ? 0
-                                          : 1;
-                                });
-
-                                Navigator.pop(dialogContext);
-
-                                ScaffoldMessenger.of(context)
-                                    .showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'Notes saved successfully',
-                                    ),
-                                  ),
-                                );
-                              },
-                              icon:
-                                  const Icon(Icons.save_rounded),
-                              label:
-                                  const Text('Save Notes'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor:
-                                    const Color(0xFF1E3A8A),
-                                foregroundColor: Colors.white,
-                                minimumSize:
-                                    const Size(0, 50),
-                                shape:
-                                    RoundedRectangleBorder(
-                                  borderRadius:
-                                      BorderRadius.circular(14),
-                                ),
-                              ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Page ${notebook['pages'] == 0 ? 1 : notebook['pages']}',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: controller,
+                      maxLines: 10,
+                      onChanged: (_) {
+                        setDialogState(() {});
+                      },
+                      decoration: InputDecoration(
+                        hintText:
+                            'Start writing your notes here...',
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius:
+                              BorderRadius.circular(16),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius:
+                              BorderRadius.circular(16),
+                          borderSide: BorderSide(
+                            color: Colors.grey.shade300,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          setState(() {
+                            notebook['content'] =
+                                controller.text;
+
+                            if (controller.text
+                                .trim()
+                                .isNotEmpty) {
+                              notebook['pages'] =
+                                  notebook['pages'] == 0
+                                      ? 1
+                                      : notebook['pages'];
+                            }
+                          });
+
+                          Navigator.pop(context);
+
+                          ScaffoldMessenger.of(context)
+                              .showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Notes saved successfully',
+                              ),
+                              behavior:
+                                  SnackBarBehavior.floating,
+                            ),
+                          );
+                        },
+                        icon: const Icon(
+                          Icons.save_rounded,
+                        ),
+                        label: const Text(
+                          'Save Notes',
+                        ),
                       ),
                     ),
                   ],
@@ -553,416 +400,547 @@ class _NotesPageState extends State<NotesPage> {
     );
   }
 
-  // ---------------------------------------------------------
-  // BUILD
-  // ---------------------------------------------------------
+  Widget _buildNotebookCard(int index) {
+    final Map<String, dynamic> notebook =
+        notebooks[index];
 
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // HEADER
-        Container(
-          width: double.infinity,
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Color(0xFF1E3A8A),
-                Color(0xFF2563EB),
-              ],
-            ),
+    final String title =
+        notebook['title'] as String;
+
+    final String description =
+        notebook['description'] as String;
+
+    final int pages =
+        notebook['pages'] as int;
+
+    final String type =
+        notebook['type'] as String;
+
+    final bool isPdf = type == 'PDF';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 14,
+            offset: const Offset(0, 5),
           ),
-          padding: const EdgeInsets.fromLTRB(
-            20,
-            18,
-            20,
-            24,
-          ),
-          child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+        ],
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: () {
+          _openNotebook(index);
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
             children: [
-              const Text(
-                'Notebooks & PDFs',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
+              Container(
+                height: 58,
+                width: 58,
+                decoration: BoxDecoration(
+                  color: isPdf
+                      ? const Color(0xFFFFEBEE)
+                      : const Color(0xFFEDE7F6),
+                  borderRadius:
+                      BorderRadius.circular(16),
+                ),
+                child: Icon(
+                  isPdf
+                      ? Icons.picture_as_pdf_rounded
+                      : Icons.menu_book_rounded,
+                  color: isPdf
+                      ? const Color(0xFFE53935)
+                      : const Color(0xFF5125D8),
+                  size: 28,
                 ),
               ),
-              const SizedBox(height: 6),
-              Text(
-                '${notebooks.length + pdfNotes.length} files stored',
-                style: const TextStyle(
-                  color: Color(0xFFBFDBFE),
-                  fontSize: 13,
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      description,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.description_outlined,
+                          size: 15,
+                          color: Colors.grey.shade600,
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          '$pages ${pages == 1 ? 'page' : 'pages'}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Container(
+                          padding:
+                              const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isPdf
+                                ? const Color(0xFFFFEBEE)
+                                : const Color(0xFFEDE7F6),
+                            borderRadius:
+                                BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            type,
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight:
+                                  FontWeight.bold,
+                              color: isPdf
+                                  ? const Color(
+                                      0xFFE53935,
+                                    )
+                                  : const Color(
+                                      0xFF5125D8,
+                                    ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
+              ),
+              const SizedBox(width: 8),
+              const Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 17,
+                color: Colors.grey,
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
 
-        // MAIN CONTENT
-        Expanded(
-          child: Container(
-            width: double.infinity,
-            decoration: const BoxDecoration(
-              color: Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.vertical(
-                top: Radius.circular(30),
-              ),
-            ),
-            child: ListView(
-              padding: const EdgeInsets.only(bottom: 20),
+  Widget _buildPdfCard(int index) {
+    final Map<String, dynamic> pdf =
+        pdfNotes[index];
+
+    final String title =
+        pdf['title'] as String;
+
+    final Uint8List bytes =
+        pdf['bytes'] as Uint8List;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 14,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Row(
               children: [
-                // NOTEBOOK SECTION
-                Padding(
-                  padding:
-                      const EdgeInsets.fromLTRB(20, 20, 20, 8),
-                  child: Row(
-                    children: [
-                      const Text(
-                        'My Notebooks',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF0F172A),
-                        ),
-                      ),
-                      const Spacer(),
-                      Text(
-                        '${notebooks.length}',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF2563EB),
-                        ),
-                      ),
-                    ],
+                Container(
+                  height: 56,
+                  width: 56,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFEBEE),
+                    borderRadius:
+                        BorderRadius.circular(16),
+                  ),
+                  child: const Icon(
+                    Icons.picture_as_pdf_rounded,
+                    color: Color(0xFFE53935),
+                    size: 28,
                   ),
                 ),
-
-                SizedBox(
-                  height: 260,
-                  child: GridView.builder(
-                    padding:
-                        const EdgeInsets.fromLTRB(20, 10, 20, 10),
-                    scrollDirection: Axis.horizontal,
-                    itemCount: notebooks.length,
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 1,
-                      crossAxisSpacing: 14,
-                      mainAxisSpacing: 14,
-                      childAspectRatio: 1.05,
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(
+                    title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
                     ),
-                    itemBuilder: (context, index) {
-                      return _buildNotebookCard(
-                        notebooks[index],
-                      );
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      _viewPdf(title, bytes);
                     },
+                    icon: const Icon(
+                      Icons.visibility_outlined,
+                    ),
+                    label: const Text('View'),
                   ),
                 ),
-
-                // NEW NOTEBOOK
-                Padding(
-                  padding:
-                      const EdgeInsets.fromLTRB(20, 8, 20, 20),
-                  child: SizedBox(
-                    height: 52,
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: _showNewNotebookDialog,
-                      icon: const Icon(Icons.add_rounded),
-                      label: const Text(
-                        'New Notebook',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            const Color(0xFF1E3A8A),
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(15),
-                        ),
-                      ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      _deletePdf(index);
+                    },
+                    icon: const Icon(
+                      Icons.delete_outline_rounded,
+                    ),
+                    label: const Text('Delete'),
+                    style: OutlinedButton.styleFrom(foregroundColor:
+                          const Color(0xFFE53935),
                     ),
                   ),
                 ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-                // PDF SECTION
-                Padding(
-                  padding:
-                      const EdgeInsets.fromLTRB(20, 5, 20, 10),
-                  child: Row(
-                    children: [
-                      const Text(
-                        'PDF Notes',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF0F172A),
-                        ),
-                      ),
-                      const Spacer(),
-                      Text(
-                        '${pdfNotes.length}',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF2563EB),
-                        ),
-                      ),
-                    ],
-                  ),
+  @override
+  Widget build(BuildContext context) {
+    final int totalFiles =
+        notebooks.length + pdfNotes.length;
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF7F5FA),
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: const Color(0xFF5125D8),
+        foregroundColor: Colors.white,
+        title: const Text(
+          'Notebooks & PDFs',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        actions: [
+          IconButton(
+            onPressed: _addPdf,
+            tooltip: 'Add PDF',
+            icon: const Icon(
+              Icons.picture_as_pdf_outlined,
+            ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _showCreateNotebookDialog,
+        backgroundColor: const Color(0xFF5125D8),
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.add_rounded),
+        label: const Text('New Notebook'),
+      ),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await Future.delayed(
+            const Duration(milliseconds: 500),
+          );
+
+          if (mounted) {
+            setState(() {});
+          }
+        },
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(
+            18,
+            18,
+            18,
+            100,
+          ),
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [
+                    Color(0xFF5125D8),
+                    Color(0xFF7447E8),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-
-                // ADD PDF BUTTON
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20),
-                  child: SizedBox(
-                    height: 52,
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: _addPdf,
-                      icon: const Icon(
-                        Icons.picture_as_pdf_rounded,
-                      ),
-                      label: const Text(
-                        'Add PDF Notes',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor:
-                            const Color(0xFF1E3A8A),
-                        side: const BorderSide(
-                          color: Color(0xFF1E3A8A),
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(15),
-                        ),
-                      ),
-                    ),
+                borderRadius:
+                    BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF5125D8)
+                        .withOpacity(0.22),
+                    blurRadius: 18,
+                    offset: const Offset(0, 8),
                   ),
-                ),
-
-                const SizedBox(height: 12),
-
-                // PDF LIST
-                if (pdfNotes.isEmpty)
+                ],
+              ),
+              child: Row(
+                children: [
                   Container(
-                    margin:
-                        const EdgeInsets.symmetric(horizontal: 20),
-                    padding: const EdgeInsets.all(24),
+                    height: 58,
+                    width: 58,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Colors.white.withOpacity(0.18),
                       borderRadius:
                           BorderRadius.circular(18),
-                      border: Border.all(
-                        color: const Color(0xFFE2E8F0),
-                      ),
                     ),
+                    child: const Icon(
+                      Icons.library_books_rounded,
+                      color: Colors.white,
+                      size: 30,
+                    ),
+                  ),
+                  const SizedBox(width: 15),
+                  Expanded(
                     child: Column(
+                      crossAxisAlignment:
+                          CrossAxisAlignment.start,
                       children: [
-                        const Icon(
-                          Icons.picture_as_pdf_outlined,
-                          size: 42,
-                          color: Color(0xFF94A3B8),
-                        ),
-                        const SizedBox(height: 10),
                         const Text(
-                          'No PDF notes yet',
+                          'Your Study Library',
                           style: TextStyle(
-                            fontSize: 16,
+                            color: Colors.white,
+                            fontSize: 19,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         const SizedBox(height: 5),
                         Text(
-                          'Add your study PDFs here to view them anytime.',
-                          textAlign: TextAlign.center,
+                          '$totalFiles files stored',
                           style: TextStyle(
-                            color: Colors.grey.shade600,
+                            color: Colors.white
+                                .withOpacity(0.82),
                             fontSize: 13,
                           ),
                         ),
                       ],
                     ),
-                  )
-                else
-                  ...List.generate(
-                    pdfNotes.length,
-                    (index) => _buildPdfCard(
-                      pdfNotes[index],
-                      index,
+                  ),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white
+                          .withOpacity(0.16),
+                      borderRadius:
+                          BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.cloud_done_outlined,
+                      color: Colors.white,
                     ),
                   ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ),
-      ],
-    );
-  }
 
-  // ---------------------------------------------------------
-  // NOTEBOOK CARD
-  // ---------------------------------------------------------
+            const SizedBox(height: 26),
 
-  Widget _buildNotebookCard(
-    Map<String, dynamic> notebook,
-  ) {
-    final Color color =
-        notebook['color'] as Color;
-
-    return InkWell(
-      borderRadius: BorderRadius.circular(20),
-      onTap: () => _openNotebook(notebook),
-      child: Container(
-        width: 220,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: const Color(0xFFE2E8F0),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.12),
-                borderRadius:
-                    BorderRadius.circular(14),
-              ),
-              child: Icon(
-                notebook['icon'] as IconData,
-                color: color,
-                size: 26,
-              ),
-            ),
-            const Spacer(),
-            Text(
-              notebook['title'] as String,
-              maxLines: 2,
-              overflow:
-                  TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF0F172A),
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              '${notebook['pages']} Pages',
-              style: const TextStyle(
-                fontSize: 12,
-                color: Color(0xFF64748B),
-              ),
-            ),
-            const SizedBox(height: 3),
-            const Row(
+            Row(
               children: [
-                Icon(
-                  Icons.menu_book_outlined,
-                  size: 14,
-                  color: Color(0xFF94A3B8),
+                const Expanded(
+                  child: Text(
+                    'Notebooks',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
-                SizedBox(width: 4),
                 Text(
-                  'Notebook',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Color(0xFF94A3B8),
+                  '${notebooks.length}',
+                  style: const TextStyle(
+                    color: Color(0xFF5125D8),
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
             ),
+
+            const SizedBox(height: 12),
+
+            if (notebooks.isEmpty)
+              _buildEmptyState(
+                icon: Icons.menu_book_outlined,
+                title: 'No notebooks yet',
+                subtitle:
+                    'Create your first notebook to start writing.',
+              )
+            else
+              ...List.generate(
+                notebooks.length,
+                (index) => _buildNotebookCard(index),
+              ),
+
+            const SizedBox(height: 20),
+
+            Row(
+              children: [
+                const Expanded(
+                  child: Text(
+                    'PDF Notes',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Text(
+                  '${pdfNotes.length}',
+                  style: const TextStyle(
+                    color: Color(0xFFE53935),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 12),
+
+            if (pdfNotes.isEmpty)
+              _buildEmptyState(
+                icon: Icons.picture_as_pdf_outlined,
+                title: 'No PDFs added yet',
+                subtitle:
+                    'Upload your study PDFs and view them here.',
+              )
+            else
+              ...List.generate(
+                pdfNotes.length,
+                (index) => _buildPdfCard(index),
+              ),
+
+            const SizedBox(height: 20),
+
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEDE7F6),
+                borderRadius:
+                    BorderRadius.circular(18),
+              ),
+              child: Row(
+                crossAxisAlignment:
+                    CrossAxisAlignment.start,
+                children: [
+                  const Icon(
+                    Icons.lightbulb_outline_rounded,
+                    color: Color(0xFF5125D8),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Keep your study material organized in one place. '
+                      'You can create notebooks or upload PDF notes for quick access.',
+                      style: TextStyle(
+                        color: Colors.grey.shade800,
+                        height: 1.4,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  // ---------------------------------------------------------
-  // PDF CARD
-  // ---------------------------------------------------------
-
-  Widget _buildPdfCard(
-    Map<String, dynamic> pdf,
-    int index,
-  ) {
+  Widget _buildEmptyState({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+  }) {
     return Container(
-      margin:
-          const EdgeInsets.fromLTRB(20, 0, 20, 12),
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 20,
+        vertical: 28,
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius:
-            BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: const Color(0xFFE2E8F0),
+          color: Colors.grey.shade200,
         ),
       ),
-      child: Row(
+      child: Column(
         children: [
-          CircleAvatar(
-            backgroundColor: color.withValues(alpha: 0.12),
-            child: Icon(icon, color: color),
-          ),
-
-          const SizedBox(width: 12),
-
-          Expanded(
-            child: Text(
-              pdf['title'] as String,
-              maxLines: 2,
-              overflow:
-                  TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF0F172A),
-              ),
+          Container(
+            padding: const EdgeInsets.all(15),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF0ECF9),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              size: 30,
+              color: const Color(0xFF5125D8),
             ),
           ),
-
-          IconButton(
-            tooltip: 'View PDF',
-            onPressed: () => _viewPdf(pdf),
-            icon: const Icon(
-              Icons.visibility_rounded,
-              color: Color(0xFF2563EB),
+          const SizedBox(height: 12),
+          Text(
+            title,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
             ),
           ),
-
-          IconButton(
-            tooltip: 'Delete PDF',
-            onPressed: () => _deletePdf(index),
-            icon: const Icon(
-              Icons.delete_outline_rounded,
-              color: Color(0xFFE11D48),
+          const SizedBox(height: 5),
+          Text(
+            subtitle,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.grey.shade600,
+              fontSize: 13,
             ),
           ),
         ],
@@ -971,32 +949,27 @@ class _NotesPageState extends State<NotesPage> {
   }
 }
 
-// ---------------------------------------------------------
-// PDF VIEWER PAGE
-// ---------------------------------------------------------
-
 class PdfViewerPage extends StatelessWidget {
   final String title;
   final Uint8List bytes;
 
   const PdfViewerPage({
-    Key? key,
+    super.key,
     required this.title,
     required this.bytes,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: const Color(0xFF5125D8),
+        foregroundColor: Colors.white,
         title: Text(
           title,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-        backgroundColor:
-            const Color(0xFF1E3A8A),
-        foregroundColor: Colors.white,
       ),
       body: SfPdfViewer.memory(bytes),
     );

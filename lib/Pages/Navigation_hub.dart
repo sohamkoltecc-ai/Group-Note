@@ -9,7 +9,10 @@ import '../Pages/profile_page.dart';
 import '../Services/deadline_service.dart';
 
 class NavigationHub extends StatefulWidget {
-  const NavigationHub({super.key, required this.deadlineService});
+  const NavigationHub({
+    super.key,
+    required this.deadlineService,
+  });
 
   final DeadlineService deadlineService;
 
@@ -36,26 +39,22 @@ class _NavigationHubState extends State<NavigationHub> {
         onNavigateToNotes: () => _changeTab(2),
         onNavigateToProfile: () => _changeTab(5),
       ),
-
       const GroupsPage(),
-
       const NotesPage(),
-
       const TasksPage(),
-
       const ChatListPage(),
-
       const ProfilePage(),
     ];
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
-
       body: SafeArea(
         bottom: false,
-        child: IndexedStack(index: _currentIndex, children: pages),
+        child: IndexedStack(
+          index: _currentIndex,
+          children: pages,
+        ),
       ),
-
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -65,110 +64,52 @@ class _NavigationHubState extends State<NavigationHub> {
               blurRadius: 20,
               offset: const Offset(0, -4),
             ),
-
-            const GroupsPage(),
-
-            const NotesPage(),
-
-            const TasksPage(),
-
-            const ProfilePage(),
           ],
         ),
-
         child: BottomNavigationBar(
           currentIndex: _currentIndex,
-
           onTap: _changeTab,
-
           type: BottomNavigationBarType.fixed,
-
           backgroundColor: Colors.white,
-
           selectedItemColor: const Color(0xFF2563EB),
-
           unselectedItemColor: const Color(0xFF94A3B8),
-
           selectedFontSize: 11,
-
           unselectedFontSize: 10,
-
-          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
-
+          selectedLabelStyle: const TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
           items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.home_rounded),
               activeIcon: Icon(Icons.home_rounded),
               label: 'Home',
             ),
-
             BottomNavigationBarItem(
               icon: Icon(Icons.groups_rounded),
               activeIcon: Icon(Icons.groups_rounded),
               label: 'Groups',
             ),
-
             BottomNavigationBarItem(
               icon: Icon(Icons.note_alt_rounded),
               activeIcon: Icon(Icons.note_alt_rounded),
               label: 'Notes',
             ),
-
             BottomNavigationBarItem(
               icon: Icon(Icons.task_alt_rounded),
               activeIcon: Icon(Icons.task_alt_rounded),
               label: 'Tasks',
             ),
-
             BottomNavigationBarItem(
               icon: Icon(Icons.chat_rounded),
               activeIcon: Icon(Icons.chat_rounded),
               label: 'Chat',
             ),
-
             BottomNavigationBarItem(
               icon: Icon(Icons.person_rounded),
               activeIcon: Icon(Icons.person_rounded),
               label: 'Profile',
             ),
-
-            items: const [
-              BottomNavigationBarItem(
-                icon: Icon(
-                  Icons.grid_view_rounded,
-                ),
-                label: 'Home',
-              ),
-
-              BottomNavigationBarItem(
-                icon: Icon(
-                  Icons.chat_bubble_rounded,
-                ),
-                label: 'Groups',
-              ),
-
-              BottomNavigationBarItem(
-                icon: Icon(
-                  Icons.article_rounded,
-                ),
-                label: 'Notes',
-              ),
-
-              BottomNavigationBarItem(
-                icon: Icon(
-                  Icons.task_alt_rounded,
-                ),
-                label: 'Tasks',
-              ),
-
-              BottomNavigationBarItem(
-                icon: Icon(
-                  Icons.person_rounded,
-                ),
-                label: 'Profile',
-              ),
-            ],
-          ),
+          ],
         ),
       ),
     );
